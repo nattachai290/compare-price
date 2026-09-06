@@ -10,11 +10,21 @@
 - `.github/workflows/pages.yml` — GitHub Actions สำหรับ deploy ขึ้น GitHub Pages
 - `.nojekyll` — ปิดการประมวลผลด้วย Jekyll
 
-## เปิดใช้งาน GitHub Pages
+## เปิดใช้งาน GitHub Pages (ต้องกดเปิดเองครั้งเดียว)
 
-1. ไปที่ **Settings → Pages** ของ repo นี้
-2. ที่หัวข้อ **Build and deployment → Source** เลือก **GitHub Actions**
-3. ทุกครั้งที่ push ขึ้น branch `main` เว็บจะถูก deploy อัตโนมัติ
+GitHub ไม่อนุญาตให้ token ของ Actions เปิด Pages ให้เอง เจ้าของ repo ต้องกดเปิดครั้งแรกเอง
+ไปที่ **Settings → Pages** แล้วเลือกทางใดทางหนึ่ง
+
+**ทางที่ 1 — GitHub Actions (workflow พร้อมแล้วในนี้)**
+
+- **Build and deployment → Source** เลือก **GitHub Actions**
+- แล้วสั่งรัน workflow `Deploy to GitHub Pages` อีกครั้ง (แท็บ Actions → Run workflow)
+  หรือ push commit ใหม่ขึ้น `main` ก็ deploy อัตโนมัติ
+
+**ทางที่ 2 — Deploy from a branch (ง่ายสุด ไม่ต้องใช้ Actions)**
+
+- **Source** เลือก **Deploy from a branch** → branch `main`, folder `/ (root)` → Save
+- เพราะ `index.html` อยู่ที่ root ของ `main` อยู่แล้ว เว็บจะขึ้นภายในไม่กี่นาที
 
 URL ที่ได้: `https://nattachai290.github.io/compare-price/`
 
