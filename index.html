@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ถูกกว่ากี่บาท — เทียบราคาต่อน้ำหนัก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#17251E;
+    --paper:#E7EBE3;
+    --card:#FFFFFF;
+    --line:#CBD5C6;
+    --soft:#F7F9F5;
+    --muted:#5E6B5C;
+    --best:#1F6B45;
+    --over:#A4463A;
+    --sticker:#F2D64B;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans Thai",system-ui,sans-serif;
+    font-size:16px;line-height:1.6;-webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:24px 16px 56px}
+
+  header h1{
+    font-family:"Anuphan",sans-serif;font-weight:700;
+    font-size:clamp(30px,8vw,44px);line-height:1.15;letter-spacing:-.01em;margin:0 0 6px;
+  }
+  header p{margin:0 0 20px;color:var(--muted);max-width:46ch}
+
+  .modes{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:4px;margin-bottom:20px}
+  .modes button{
+    flex:1;border:0;background:transparent;color:var(--muted);
+    font-family:inherit;font-size:15px;font-weight:500;padding:9px 6px;
+    border-radius:999px;cursor:pointer;
+  }
+  .modes button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+  .item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:14px;margin-bottom:12px;position:relative}
+  .item.is-best{border-color:var(--best);box-shadow:0 0 0 1px var(--best)}
+  .sticker{position:absolute;top:-11px;right:12px;background:var(--sticker);color:var(--ink);
+    font-size:13px;font-weight:600;padding:3px 10px;border-radius:6px;transform:rotate(-2deg)}
+
+  .item-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .item-name{flex:1;border:0;border-bottom:1px dashed var(--line);background:transparent;
+    font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);padding:2px 0;min-width:0}
+  .item-name::placeholder{color:#9AA795;font-weight:500}
+  .kill{border:1px solid var(--line);background:transparent;color:var(--muted);
+    width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:17px;line-height:1;flex:none}
+  .kill:hover{border-color:var(--over);color:var(--over)}
+
+  .pricing{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);
+    border-radius:999px;padding:3px;margin-bottom:10px;width:fit-content}
+  .pricing button{border:0;background:transparent;color:var(--muted);font-family:inherit;
+    font-size:13px;padding:5px 12px;border-radius:999px;cursor:pointer}
+  .pricing button[aria-pressed="true"]{background:var(--ink);color:#fff}
+
+  .heads{display:grid;gap:8px;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .piece{display:grid;gap:8px;align-items:center;margin-bottom:8px}
+  .heads.total{grid-template-columns:1fr 78px 62px 34px}
+  .piece.total{grid-template-columns:1fr 78px 62px 34px}
+  .heads.each{grid-template-columns:1fr 78px 62px 1fr 34px}
+  .piece.each{grid-template-columns:1fr 78px 62px 1fr 34px}
+  .heads span:nth-child(1),.heads span:nth-child(4){text-align:left}
+  .piece input,.piece select{width:100%;font-family:inherit;font-size:16px;font-weight:600;
+    color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+  .piece input{text-align:right}
+  .piece select{font-size:14px;font-weight:500;padding:10px 6px;background:#fff}
+  .rmv{border:1px solid var(--line);background:transparent;color:var(--muted);
+    height:34px;border-radius:9px;cursor:pointer;font-size:15px;line-height:1}
+  .rmv:hover{border-color:var(--over);color:var(--over)}
+  .rmv[disabled]{opacity:.25;cursor:default}
+
+  .addpiece{border:1px dashed var(--line);background:transparent;color:var(--muted);
+    font-family:inherit;font-size:14px;padding:8px 12px;border-radius:10px;cursor:pointer;margin-top:2px}
+  .addpiece:hover{border-color:var(--ink);color:var(--ink)}
+
+  .totalprice{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  .totalprice label{font-size:14px;color:var(--muted)}
+  .totalprice input{width:120px;font-family:inherit;font-size:17px;font-weight:600;text-align:right;
+    color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+
+  .row-out{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    margin-top:10px;padding-top:10px;border-top:1px solid var(--line);
+    font-size:14px;color:var(--muted);flex-wrap:wrap}
+  .per{font-family:"Anuphan",sans-serif;font-size:22px;font-weight:600;color:var(--ink)}
+  .per small{font-size:13px;font-weight:500;color:var(--muted);margin-left:3px}
+  .gap{font-weight:600;color:var(--over);text-align:right}
+  .gap.best{color:var(--best)}
+  .sums{width:100%;font-size:13px;color:var(--muted);margin-top:2px}
+
+  .add{width:100%;border:1px dashed var(--line);background:transparent;color:var(--muted);
+    font-family:inherit;font-size:15px;padding:12px;border-radius:var(--r);cursor:pointer}
+  .add:hover{border-color:var(--ink);color:var(--ink)}
+
+  .verdict{margin-top:22px;background:var(--ink);color:#fff;border-radius:var(--r);padding:18px 16px}
+  .verdict h2{font-family:"Anuphan",sans-serif;font-size:26px;font-weight:600;margin:0 0 4px;line-height:1.25}
+  .verdict p{margin:0;color:#BFCDBB;font-size:15px}
+  .verdict .big{font-family:"Anuphan",sans-serif;font-size:clamp(38px,12vw,56px);font-weight:700;
+    line-height:1.05;margin:10px 0 2px;color:var(--sticker)}
+  .verdict.empty{background:transparent;color:var(--muted);border:1px dashed var(--line);padding:22px 16px}
+  .verdict.empty h2{color:var(--ink);font-size:20px}
+
+  footer{margin-top:26px;font-size:13px;color:var(--muted);display:flex;
+    justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .reset{border:0;background:transparent;color:var(--muted);font-family:inherit;
+    font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
+
+  :focus-visible{outline:2px solid var(--best);outline-offset:2px}
+
+  @media (max-width:430px){
+    .heads{display:none}
+    .piece.total{grid-template-columns:1fr 70px 54px 32px}
+    .piece.each{grid-template-columns:1fr 70px 54px 32px;grid-template-areas:"q u c d" "p p p p"}
+    .piece.each .p-q{grid-area:q}.piece.each .p-u{grid-area:u}
+    .piece.each .p-c{grid-area:c}.piece.each .p-d{grid-area:d}
+    .piece.each .p-p{grid-area:p}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ถูกกว่ากี่บาท</h1>
+    <p>ใส่ได้ทั้งชิ้นเดียวและแบบแพ็ค น้ำหนักแต่ละชิ้นไม่เท่ากันก็ได้ จะบอกว่าอันไหนคุ้มกว่าและต่างกันกี่บาท</p>
+  </header>
+
+  <div class="modes" role="group" aria-label="เทียบแบบ">
+    <button type="button" data-mode="weight" aria-pressed="true">น้ำหนัก</button>
+    <button type="button" data-mode="volume" aria-pressed="false">ปริมาตร</button>
+    <button type="button" data-mode="count" aria-pressed="false">จำนวนชิ้น</button>
+  </div>
+
+  <div id="list"></div>
+  <button class="add" type="button" id="add">+ เพิ่มสินค้าที่จะเทียบ</button>
+
+  <div class="verdict empty" id="verdict" aria-live="polite">
+    <h2>ยังเทียบไม่ได้</h2>
+    <p>ใส่ปริมาณและราคาให้ครบอย่างน้อย 2 รายการ</p>
+  </div>
+
+  <footer>
+    <span>อัปเดตล่าสุด 6 ก.ย. 2569 เวลา 18:02 น.</span>
+    <button class="reset" type="button" id="reset">ล้างทั้งหมด</button>
+  </footer>
+</div>
+
+<script>
+const MODES = {
+  weight:{units:[["g","กรัม",0.001],["kg","กก.",1]], base:"กก.",  small:["100 ก.",0.1]},
+  volume:{units:[["ml","มล.",0.001],["l","ลิตร",1]], base:"ลิตร", small:["100 มล.",0.1]},
+  count: {units:[["pc","ชิ้น",1]],                    base:"ชิ้น", small:null}
+};
+
+let mode = "weight";
+let items = [
+  {name:"สินค้า 1", mode:"total", total:"219", pieces:[{qty:"1220",unit:"g",count:"1",price:""}]},
+  {name:"สินค้า 2", mode:"total", total:"119", pieces:[{qty:"740", unit:"g",count:"1",price:""}]}
+];
+
+const list = document.getElementById("list");
+const verdict = document.getElementById("verdict");
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const fmt = (n,d=2) => n.toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+function factor(u){
+  for(const m of Object.values(MODES))
+    for(const [id,,f] of m.units) if(id===u) return f;
+  return 1;
+}
+function totalQty(it){
+  return it.pieces.reduce((s,p)=> s + num(p.qty)*factor(p.unit)*Math.max(num(p.count)||1,0), 0);
+}
+function totalPrice(it){
+  if(it.mode==="total") return num(it.total);
+  return it.pieces.reduce((s,p)=> s + num(p.price)*Math.max(num(p.count)||1,0), 0);
+}
+function rateOf(it){
+  const q = totalQty(it), p = totalPrice(it);
+  if(!(q>0) || !(p>0)) return null;
+  return p/q;
+}
+function niceQty(q,m){
+  if(mode==="count") return fmt(q,0)+" ชิ้น";
+  return q < 1 ? fmt(q*1000,0)+" "+(mode==="weight"?"ก.":"มล.") : fmt(q,3).replace(/0+$/,"").replace(/\.$/,"")+" "+m.base;
+}
+
+function render(){
+  const m = MODES[mode];
+  const rates = items.map(rateOf);
+  const valid = rates.filter(r=>r!==null);
+  const best = valid.length ? Math.min(...valid) : null;
+
+  list.innerHTML = "";
+  items.forEach((it,i)=>{
+    const rate = rates[i];
+    const isBest = rate!==null && valid.length>1 && rate===best;
+    const pm = it.mode;
+
+    const pieces = it.pieces.map((p,j)=>`
+      <div class="piece ${pm}">
+        <span class="p-q"><input id="q${i}_${j}" inputmode="decimal" value="${p.qty}" placeholder="0"
+              aria-label="ปริมาณชิ้นที่ ${j+1}" data-i="${i}" data-j="${j}" data-k="qty"></span>
+        <span class="p-u"><select id="u${i}_${j}" aria-label="หน่วย" data-i="${i}" data-j="${j}" data-k="unit">
+          ${m.units.map(([id,label])=>`<option value="${id}" ${p.unit===id?"selected":""}>${label}</option>`).join("")}
+        </select></span>
+        <span class="p-c"><input id="c${i}_${j}" inputmode="numeric" value="${p.count}" placeholder="1"
+              aria-label="จำนวนชิ้นแบบนี้" data-i="${i}" data-j="${j}" data-k="count"></span>
+        ${pm==="each" ? `<span class="p-p"><input id="pp${i}_${j}" inputmode="decimal" value="${p.price}" placeholder="ราคา/ชิ้น"
+              aria-label="ราคาต่อชิ้น" data-i="${i}" data-j="${j}" data-k="price"></span>`:``}
+        <span class="p-d"><button class="rmv" type="button" data-delp="${i}_${j}" ${it.pieces.length<2?"disabled":""}
+              aria-label="ลบชิ้นที่ ${j+1}">×</button></span>
+      </div>`).join("");
+
+    const el = document.createElement("div");
+    el.className = "item" + (isBest?" is-best":"");
+    el.innerHTML = `
+      ${isBest?'<span class="sticker">คุ้มที่สุด</span>':''}
+      <div class="item-top">
+        <input class="item-name" value="${it.name.replace(/"/g,'&quot;')}" placeholder="ชื่อสินค้า"
+               aria-label="ชื่อสินค้ารายการที่ ${i+1}" data-i="${i}" data-k="name">
+        ${items.length>2?`<button class="kill" type="button" data-del="${i}" aria-label="ลบรายการที่ ${i+1}">×</button>`:''}
+      </div>
+
+      <div class="pricing" role="group" aria-label="วิธีใส่ราคา">
+        <button type="button" data-pm="${i}|total" aria-pressed="${pm==='total'}">ราคารวมทั้งแพ็ค</button>
+        <button type="button" data-pm="${i}|each"  aria-pressed="${pm==='each'}">ใส่ราคาแยกชิ้น</button>
+      </div>
+
+      <div class="heads ${pm}">
+        <span>ปริมาณต่อชิ้น</span><span>หน่วย</span><span>จำนวน</span>${pm==="each"?"<span>ราคา/ชิ้น</span>":""}<span></span>
+      </div>
+      ${pieces}
+      <button class="addpiece" type="button" data-addp="${i}">+ เพิ่มชิ้นในแพ็ค</button>
+
+      ${pm==="total" ? `
+      <div class="totalprice">
+        <label for="tp${i}">ราคารวมทั้งแพ็ค (บาท)</label>
+        <input id="tp${i}" inputmode="decimal" value="${it.total}" placeholder="0" data-i="${i}" data-k="total">
+      </div>`:``}
+
+      <div class="row-out">
+        <span class="per">${rate===null?"—":fmt(rate)}<small>บาท / 1 ${m.base}</small></span>
+        <span class="gap ${isBest?"best":""}">${gapText(rate,best,valid.length,m)}</span>
+        <span class="sums">รวม ${niceQty(totalQty(it),m)} · ${fmt(totalPrice(it))} บาท${
+          it.pieces.length>1||num(it.pieces[0].count)>1 ? " · "+fmt(it.pieces.reduce((s,p)=>s+Math.max(num(p.count)||1,0),0),0)+" ชิ้น" : ""}</span>
+      </div>`;
+    list.appendChild(el);
+  });
+
+  drawVerdict(rates, best, m);
+}
+
+function gapText(rate,best,n,m){
+  if(rate===null||best===null||n<2) return "";
+  if(rate===best) return "ถูกที่สุด";
+  return "แพงกว่า "+fmt(rate-best)+" บาท / 1 "+m.base;
+}
+
+function drawVerdict(rates,best,m){
+  const ok = rates.map((r,i)=>({r,i})).filter(x=>x.r!==null);
+  if(ok.length<2||best===null){
+    verdict.className="verdict empty";
+    verdict.innerHTML=`<h2>ยังเทียบไม่ได้</h2><p>ใส่ปริมาณและราคาให้ครบอย่างน้อย 2 รายการ</p>`;
+    return;
+  }
+  const win = ok.find(x=>x.r===best);
+  const rest = ok.filter(x=>x.r!==best).sort((a,b)=>a.r-b.r);
+  const name = items[win.i].name.trim() || ("สินค้า "+(win.i+1));
+  if(!rest.length){
+    verdict.className="verdict";
+    verdict.innerHTML=`<h2>ราคาต่อหน่วยเท่ากันพอดี</h2><p>ซื้ออันไหนก็คุ้มเท่ากัน</p>`;
+    return;
+  }
+  const next = rest[0], diff = next.r-best, pct = diff/next.r*100;
+  const smallLine = m.small
+    ? `${fmt(best)} บาท ต่อ 1 ${m.base} (${fmt(best*m.small[1])} บาท ต่อ ${m.small[0]})`
+    : `${fmt(best)} บาท ต่อ 1 ${m.base}`;
+  const others = rest.map(x=>{
+    const nm = items[x.i].name.trim()||("สินค้า "+(x.i+1));
+    return `${nm} แพงกว่า ${fmt(x.r-best)} บาท/${m.base}`;
+  }).join(" · ");
+
+  verdict.className="verdict";
+  verdict.innerHTML=`
+    <h2>${name} คุ้มกว่า</h2>
+    <div class="big">${fmt(diff)} บาท</div>
+    <p>ถูกกว่าทุก 1 ${m.base} ที่ซื้อ คิดเป็น ${fmt(pct,1)}%</p>
+    <p style="margin-top:10px">${smallLine}</p>
+    ${rest.length>1?`<p style="margin-top:6px">${others}</p>`:""}`;
+}
+
+/* ---- events ---- */
+list.addEventListener("input", e=>{
+  const t=e.target, i=t.dataset.i, j=t.dataset.j, k=t.dataset.k;
+  if(i===undefined||!k) return;
+  let v=t.value;
+  if(k!=="name") v=v.replace(/[^\d.]/g,"");
+  if(j===undefined) items[i][k]=v; else items[i].pieces[j][k]=v;
+  if(k==="name"){ drawVerdict(items.map(rateOf), minRate(), MODES[mode]); return; }
+  const pos=t.selectionStart, id=t.id;
+  render();
+  const back=id&&document.getElementById(id);
+  if(back){ back.focus(); try{ back.setSelectionRange(pos,pos); }catch(_){} }
+});
+function minRate(){ const v=items.map(rateOf).filter(r=>r!==null); return v.length?Math.min(...v):null; }
+
+list.addEventListener("change", e=>{
+  const t=e.target;
+  if(t.dataset.k==="unit"){ items[t.dataset.i].pieces[t.dataset.j].unit=t.value; render(); }
+});
+
+list.addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.del!==undefined){ items.splice(+b.dataset.del,1); render(); return; }
+  if(b.dataset.addp!==undefined){
+    const i=+b.dataset.addp;
+    items[i].pieces.push({qty:"",unit:MODES[mode].units[0][0],count:"1",price:""});
+    render();
+    const f=document.getElementById("q"+i+"_"+(items[i].pieces.length-1)); if(f) f.focus();
+    return;
+  }
+  if(b.dataset.delp!==undefined){
+    const [i,j]=b.dataset.delp.split("_").map(Number);
+    if(items[i].pieces.length>1){ items[i].pieces.splice(j,1); render(); }
+    return;
+  }
+  if(b.dataset.pm!==undefined){
+    const [i,pm]=b.dataset.pm.split("|");
+    items[i].mode=pm; render();
+    return;
+  }
+});
+
+document.getElementById("add").addEventListener("click", ()=>{
+  items.push({name:"สินค้า "+(items.length+1), mode:"total", total:"",
+              pieces:[{qty:"",unit:MODES[mode].units[0][0],count:"1",price:""}]});
+  render();
+  const f=document.getElementById("q"+(items.length-1)+"_0"); if(f) f.focus();
+});
+
+document.getElementById("reset").addEventListener("click", ()=>{
+  const u=MODES[mode].units[0][0];
+  items=[1,2].map(n=>({name:"สินค้า "+n, mode:"total", total:"",
+                       pieces:[{qty:"",unit:u,count:"1",price:""}]}));
+  render();
+});
+
+document.querySelectorAll(".modes button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    mode=b.dataset.mode;
+    document.querySelectorAll(".modes button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+    const def=MODES[mode].units[0][0];
+    items.forEach(it=>it.pieces.forEach(p=>{
+      if(!MODES[mode].units.some(u=>u[0]===p.unit)) p.unit=def;
+    }));
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
