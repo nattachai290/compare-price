@@ -7,27 +7,18 @@
 ## ไฟล์
 
 - `index.html` — ตัวเว็บทั้งหมด (HTML + CSS + JS อยู่ในไฟล์เดียว ไม่ต้อง build)
-- `.github/workflows/pages.yml` — GitHub Actions สำหรับ deploy ขึ้น GitHub Pages
 - `.nojekyll` — ปิดการประมวลผลด้วย Jekyll
 
 ## Auto deploy
 
-ทุกครั้งที่ push ขึ้น branch `main` workflow `Deploy to GitHub Pages`
-จะคัดลอก `index.html` (พร้อม `.nojekyll`) ไปวางที่ branch `gh-pages` ให้อัตโนมัติ
-ไม่ต้องแตะอะไรอีก แก้ไฟล์แล้ว push อย่างเดียว
+เปิด GitHub Pages ไว้แล้วแบบ **Deploy from a branch → `main` / `(root)`**
+เพราะ `index.html` อยู่ที่ root ของ `main` อยู่แล้ว ทุกครั้งที่ push เข้า `main`
+GitHub จะ build และขึ้นเว็บให้เองภายในไม่กี่นาที ไม่ต้องมี workflow อะไรเพิ่ม
 
-### ต้องกดเปิด Pages เองครั้งแรกครั้งเดียว
+ดูสถานะการ deploy แต่ละครั้งได้ที่แท็บ **Actions** (`pages-build-deployment`)
+หรือที่ **Settings → Pages**
 
-GitHub ไม่ยอมให้ token ของ Actions สร้าง Pages site ให้ (`Resource not accessible by
-integration`) เจ้าของ repo ต้องเปิดเองรอบแรก
-
-1. ไปที่ **Settings → Pages**
-2. **Build and deployment → Source** เลือก **Deploy from a branch**
-3. เลือก branch `gh-pages` folder `/ (root)` แล้วกด **Save**
-
-จากนั้นทุก push เข้า `main` จะขึ้นเว็บให้เองภายในไม่กี่นาที
-
-URL ที่ได้: `https://nattachai290.github.io/compare-price/`
+URL: `https://nattachai290.github.io/compare-price/`
 
 ## รันในเครื่อง
 
